@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sv-shop - Products</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="box">
+      <h1>Sv-shop</h1>
+
+      <select id="sortSelect">
+        <option value="name">By name</option>
+        <option value="price">By price</option>
+      </select>
+
+      <div id="productsContainer" class="products-list"></div>
+
+      <button id="buyBtn">buy</button>
+    </div>
+
+    <script>
+      let allProducts = [];
+      let selectedProducts = [];
+
+      const sortSelect = document.getElementById("sortSelect");
+      const productsContainer = document.getElementById("productsContainer");
+      const buyBtn = document.getElementById("buyBtn");
+
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        // רק לקוחות רשומים יכולים להיכנס
+        window.location.href = "index.html";
+      }
+
+      async function loadProducts() {
+        const res = await fetch("/api/products");
+        const data = await res.json();
+        allProducts = data;
+        renderProducts();
+      }
+
+      function renderProducts() {
+        const sortBy = sortSelect.value;
+        const sorted = [...allProducts].sort((a, b) => {
+          if (sortBy === "name") return a.name.localeCompare(b.name);
+          return a.price - b.price;
+        });
+
+        productsContainer.innerHTML = "";
+
+        sorted.forEach((p) => {
+          const btn = document.createElement("button");
+          btn.textContent = `${p.name}   ${p.price}`;
+          btn.addEventListener("click", () => toggleProduct(p, btn));
+          productsContainer.appendChild(btn);
+        });
+      }
+
+      function toggleProduct(product, button) {
+        const index = selectedProducts.findIndex((x) => x._id === product._id);
+        if (index === -1) {
+          selectedProducts.push(product);
+          button.classList.add("product-selected");
+        } else {
+          selectedProducts.splice(index, 1);
+          button.classList.remove("product-selected");
+        }
+      }
+
+      sortSelect.addEventListener("change", renderProducts);
+
+      buyBtn.addEventListener("click", () => {
+        if (!selectedProducts.length) {
+          alert("No products selected");
+          return;
+        }
+        localStorage.setItem("cart", JSON.stringify(selectedProducts));
+        window.location.href = "buy.html";
+      });
+
+      loadProducts();
+    </script>
+  </body>
+</html>

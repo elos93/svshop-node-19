@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sv-shop - Signup</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="box">
+      <h1>Sv-shop</h1>
+
+      <input type="text" id="signupName" placeholder="name" />
+      <input type="email" id="signupEmail" placeholder="email" />
+      <input type="password" id="signupPassword" placeholder="password" />
+
+      <button id="signupBtn">signup</button>
+    </div>
+
+    <script>
+      document
+        .getElementById("signupBtn")
+        .addEventListener("click", async () => {
+          const name = document.getElementById("signupName").value.trim();
+          const email = document.getElementById("signupEmail").value.trim();
+          const password = document
+            .getElementById("signupPassword")
+            .value.trim();
+
+          if (!name || !email || !password) {
+            alert("Please fill all fields");
+            return;
+          }
+
+          try {
+            const res = await fetch("/api/signup", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name, email, password }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+              // אם המייל כבר קיים – Alert ונשארים בעמוד זה
+              alert(data.message || "Signup failed");
+              return;
+            }
+
+            alert("Signup success, please sign in");
+            window.location.href = "index.html";
+          } catch (err) {
+            console.error(err);
+            alert("Server error");
+          }
+        });
+    </script>
+  </body>
+</html>

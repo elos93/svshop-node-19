@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sv-shop - Sign in</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="box">
+      <h1>Sv-shop</h1>
+
+      <input type="email" id="loginEmail" placeholder="email" />
+      <input type="password" id="loginPassword" placeholder="password" />
+
+      <button id="signinBtn">signin</button>
+      <button id="signupPageBtn">signup</button>
+    </div>
+
+    <script>
+      const signinBtn = document.getElementById("signinBtn");
+      const signupPageBtn = document.getElementById("signupPageBtn");
+
+      signinBtn.addEventListener("click", async () => {
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value.trim();
+
+        if (!email || !password) {
+          alert("Please fill all fields");
+          return;
+        }
+
+        try {
+          const res = await fetch("/api/signin", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            // אם הלקוח לא רשום או סיסמה שגויה – Alert ונשארים בעמוד
+            alert(data.message || "Login failed");
+            return;
+          }
+
+          localStorage.setItem("userId", data.userId);
+          localStorage.setItem("userName", data.name);
+
+          window.location.href = "products.html";
+        } catch (err) {
+          console.error(err);
+          alert("Server error");
+        }
+      });
+
+      signupPageBtn.addEventListener("click", () => {
+        window.location.href = "signup.html";
+      });
+    </script>
+  </body>
+</html>

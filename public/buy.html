@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sv-shop - Buy</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="box">
+      <h1>Sv-shop</h1>
+
+      <p id="totalProducts">Total product: 0</p>
+      <p id="totalPrice">Total price: 0</p>
+
+      <button id="approveBtn">Approve</button>
+    </div>
+
+    <script>
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        window.location.href = "index.html";
+      }
+
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+      const totalProductsEl = document.getElementById("totalProducts");
+      const totalPriceEl = document.getElementById("totalPrice");
+      const approveBtn = document.getElementById("approveBtn");
+
+      let totalPrice = 0;
+
+      function init() {
+        const count = cart.length;
+        totalPrice = cart.reduce((sum, p) => sum + p.price, 0);
+
+        totalProductsEl.textContent = `Total product: ${count}`;
+        totalPriceEl.textContent = `Total price: ${totalPrice}`;
+      }
+
+      approveBtn.addEventListener("click", async () => {
+        if (!cart.length) {
+          alert("No products in cart");
+          return;
+        }
+
+        try {
+          const res = await fetch("/api/orders", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId,
+              items: cart.map((p) => ({ name: p.name, price: p.price })),
+              totalPrice,
+            }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            alert(data.message || "Error saving order");
+            return;
+          }
+
+          alert("Order approved and saved. You are now logged out.");
+
+          // ניתוק משתמש מהמערכת
+          localStorage.removeItem("userId");
+          localStorage.removeItem("userName");
+          localStorage.removeItem("cart");
+
+          window.location.href = "index.html";
+        } catch (err) {
+          console.error(err);
+          alert("Server error");
+        }
+      });
+
+      init();
+    </script>
+  </body>
+</html>
