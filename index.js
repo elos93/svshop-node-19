@@ -173,8 +173,12 @@ app.get("/all", async (req, res) => {
 
     res.json(orders);
   } catch (err) {
-    console.error("all error:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error("seed error:", err);
+    res.status(500).json({
+      message: "Server error",
+      error: err.message, // נוסיף את ההודעה עצמה
+      name: err.name, // ושם השגיאה
+    });
   }
 });
 
